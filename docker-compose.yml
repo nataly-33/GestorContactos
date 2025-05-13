@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   mongodb:
     image: mongo:6.0
@@ -8,7 +6,7 @@ services:
       - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: nataly-33
-      MONGO_INITDB_ROOT_PASSWORD: passWord&3
+      MONGO_INITDB_ROOT_PASSWORD: passWord63
     volumes:
       - mongo_data:/data/db
     restart: always
@@ -20,7 +18,7 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      MONGO_URI: "mongodb://nataly-33:passWord&3@mongodb:27017"
+      MONGO_URI: "mongodb://nataly-33:passWord63@mongodb:27017/proyectobst"
     depends_on:
       - mongodb
     restart: always

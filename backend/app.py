@@ -1,162 +1,157 @@
-import json
-import os
 from flask import Flask, request, jsonify
-from pymongo import MongoClient
-from datetime import datetime
-from models.equipo import Equipo  
-from models.jugador import Jugador
-from models.partido import Partido
-from models.arbolTorneo import ArbolTorneo
+from flask_cors import CORS
+import os
+
+from flask_pymongo import PyMongo
+from bson.objectid import ObjectId
+
+from models.contacto import Contacto
+from models.arbolBST import ArbolBST
 
 app = Flask(__name__)
+CORS(app)
 
-# Conexión a la base de datos MongoDB
-client = MongoClient(os.getenv("MONGO_URI"))
-db = client["torneo_eliminacion_directa"]
-equipos= db["equipo"]            
-jugadores= db["jugador"]
-partidos= db["partido"]
+# Configuración de MongoDB
+app.config["MONGO_URI"] = os.environ.get("MONGO_URI", "mongodb://localhost/proyectobst")
+mongo = PyMongo(app)
+db = mongo.db.contactos
 
-# Ruta para cargar los datos de equipos desde un archivo JSON
-@app.route('/cargar_equipos', methods=['POST'])
-def cargar_equipos():
-    data = request.get_json()  # Traemos los datos del JSON
-    equipos_lista=[]
+# Inicializar árbol BST
+arbol_contactos = ArbolBST()
 
-    for equipo_data in data:
-        # Crear instancia de Equipo
-        equipo = Equipo(
-            nombre=equipo_data["nombre"],
-            director_tecnico=equipo_data["director_tecnico"],
-            imagen=equipo_data["imagen"]
+def cargar_contactos_en_arbol():
+    contactos = db.find()
+    for c in contactos:
+        contacto = Contacto(
+            c.get("nombre", ""),
+            c.get("telefono", ""),
+            c.get("correo", ""),
+            c.get("imagen", "")
         )
+        arbol_contactos.insertar(contacto)
 
-        # Insertar el equipo en Mongo usando to_dict (sin plantel)
-        equipo_id = equipos.insert_one(equipo.to_dict()).inserted_id
+cargar_contactos_en_arbol()
 
-        # Agregar jugadores (si hay)
-        for jugador_data in equipo_data.get("jugadores", []):
-            jugador = Jugador(
-                nombre=jugador_data["nombre"],
-            )
 
-            # Insertar jugador en Mongo usando su to_dict()
-            jugador_dict = jugador.to_dict()
-            jugador_dict["equipo_id"] = str(equipo_id)  # Relación jugador-equipo
-            jugadores.insert_one(jugador_dict)
+# Rutas
 
-            # Agregar el jugador al objeto en memoria (opcional)
-            equipo.agregar_jugador(jugador_data["nombre"])
+@app.route('/crear', methods=['POST'])
+def crear_contacto():
+    data = request.get_json()
+    
+    # Validaciones básicas
+    if not data or 'nombre' not in data:
+        return jsonify({"error": "Falta el nombre del contacto"}), 400
+    
+    nombre = data.get('nombre')
+    telefono = data.get('telefono')
+    correo = data.get('correo')
+    imagen = data.get('imagen')
 
-        # Guardar el equipo en la lista en memoria
-        equipos_lista.append(equipo)
+    # Verificar si ya existe el contacto por nombre
+    if arbol_contactos.buscar(nombre):
+        return jsonify({"error": "Ya existe un contacto con ese nombre"}), 400
 
-    return jsonify({"mensaje": "Equipos y jugadores cargados exitosamente"}), 201
+    # Crear y guardar en MongoDB
+    nuevo_contacto = Contacto(nombre, telefono, correo, imagen)
+    resultado = db.insert_one(nuevo_contacto.to_dict())
 
-"""
-# Ruta para crear un nuevo equipo
-@app.route('/crear_equipo', methods=['POST'])
-def crear_equipo():
-    try:
-        data = request.get_json()
-        nuevo_equipo = Equipo(data["nombre"], data["director_tecnico"], data.get("imagen"))
-        
-        for jugador_data in data.get("jugadores", []):
-            jugador = Jugador(jugador_data["nombre"])
-            nuevo_equipo.agregar_jugador(jugador.nombre)
-        
-        equipos_collection.insert_one(nuevo_equipo.to_dict())  # Guardar el equipo en MongoDB
-        return jsonify({"message": "Equipo creado exitosamente"}), 201
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
+    # Insertar en el árbol
+    arbol_contactos.insertar(nuevo_contacto)
 
-# Ruta para actualizar un equipo
-@app.route('/actualizar_equipo/<equipo_id>', methods=['PUT'])
-def actualizar_equipo(equipo_id):
-    try:
-        data = request.get_json()
-        equipo = equipos_collection.find_one({"_id": equipo_id})
+    return jsonify({
+        "mensaje": "Contacto agregado correctamente",
+        "_id": str(resultado.inserted_id)
+    })
 
-        if not equipo:
-            return jsonify({"error": "Equipo no encontrado"}), 404
 
-        equipos_collection.update_one({"_id": equipo_id}, {"$set": data})  # Actualizar el equipo
-        return jsonify({"message": "Equipo actualizado exitosamente"}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
+@app.route('/buscar/<nombre>', methods=['GET'])
+def buscar_contacto(nombre):
+    contacto = arbol_contactos.buscar(nombre)
 
-# Ruta para eliminar un equipo
-@app.route('/eliminar_equipo/<equipo_id>', methods=['DELETE'])
-def eliminar_equipo(equipo_id):
-    try:
-        equipos_collection.delete_one({"_id": equipo_id})  # Eliminar el equipo
-        return jsonify({"message": "Equipo eliminado exitosamente"}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
+    if contacto:
+        return jsonify(contacto.to_dict())
+    else:
+        return jsonify({"mensaje": "Contacto no encontrado"}), 404
 
-# Ruta para crear o actualizar un partido
-@app.route('/crear_o_actualizar_partido', methods=['POST'])
-def crear_o_actualizar_partido():
-    try:
-        data = request.get_json()
-        partido_data = data["partido"]
-        
-        # Verificar si el partido ya existe en la base de datos
-        partido = partidos_collection.find_one({"_id": partido_data["id"]})
-        
-        if partido:
-            # Si el partido ya existe, actualizarlo
-            partidos_collection.update_one(
-                {"_id": partido_data["id"]}, 
-                {"$set": partido_data}  # Actualizar con los nuevos datos
-            )
-            return jsonify({"message": "Partido actualizado exitosamente"}), 200
-        else:
-            # Si el partido no existe, crear uno nuevo
-            partidos_collection.insert_one(partido_data)
-            return jsonify({"message": "Partido creado exitosamente"}), 201
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
 
-# Ruta para registrar los resultados del partido
-@app.route('/registrar_resultado', methods=['POST'])
-def registrar_resultado():
-    try:
-        data = request.get_json()
-        partido_data = data["partido"]
-        goles_equipo1 = partido_data["goles_equipo1"]
-        goles_equipo2 = partido_data["goles_equipo2"]
-        
-        # Buscar el partido correspondiente en la base de datos
-        partido = partidos_collection.find_one({"_id": partido_data["id"]})
-        if not partido:
-            return jsonify({"error": "Partido no encontrado"}), 404
+@app.route('/listar', methods=['GET'])
+def listar_contactos():
+    contactos = arbol_contactos.listar()
+    return jsonify(contactos)
 
-        # Actualizar los goles y determinar el ganador
-        partido["goles_equipo1"] = goles_equipo1
-        partido["goles_equipo2"] = goles_equipo2
-        partido["ganador"] = partido["equipo1"] if goles_equipo1 > goles_equipo2 else partido["equipo2"]
-        
-        # Actualizar el partido en la base de datos
-        partidos_collection.update_one({"_id": partido_data["id"]}, {"$set": partido})
 
-        # Actualizar el árbol del torneo con los nuevos resultados
-        arbol = ArbolTorneo()  # Este debe ser cargado previamente desde el archivo JSON o base de datos
-        arbol.actualizar_torneo(partido)
+@app.route('/eliminar/<nombre>', methods=['DELETE'])
+def eliminar_contacto(nombre):
+    contacto = arbol_contactos.buscar(nombre)
+    if contacto:
+        db.delete_one({"nombre": nombre})
+        arbol_contactos.eliminar(nombre)
+        return jsonify({"mensaje": f"Contacto '{nombre}' eliminado"})
+    else:
+        return jsonify({"error": "Contacto no encontrado"}), 404
 
-        return jsonify({"message": "Resultado registrado y torneo actualizado exitosamente"}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
+@app.route('/editar/<nombre>', methods=['PUT'])
+def editar_contacto(nombre):
+    contacto = arbol_contactos.buscar(nombre)
 
-# Ruta para obtener el árbol de partidos del torneo
-@app.route('/obtener_torneo', methods=['GET'])
-def obtener_torneo():
-    try:
-        arbol = ArbolTorneo()  # Este debe ser cargado previamente desde el archivo JSON o base de datos
-        resultado_torneo = arbol.obtener_partidos_por_nivel()
-        return jsonify({"torneo": resultado_torneo}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400 
-"""
+    if not contacto:
+        return jsonify({"error": "Contacto no encontrado"}), 404
+
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "No se recibieron datos"}), 400
+
+    # Recibir todos los campos del contacto
+    nuevo_nombre = data.get("nombre", contacto.nombre)
+    telefono = data.get("telefono", contacto.telefono)
+    correo = data.get("correo", contacto.correo)
+    imagen = data.get("imagen", contacto.imagen)
+
+    # Validaciones básicas
+    if not telefono or len(telefono) != 8 or not telefono.isdigit():
+        return jsonify({"error": "Teléfono debe tener 8 dígitos"}), 400
+    if not correo or "@" not in correo:
+        return jsonify({"error": "Correo inválido"}), 400
+
+    # Si cambia el nombre, hay que borrar y reinsertar en el árbol
+    if nuevo_nombre != contacto.nombre:
+        db.update_one(
+            {"nombre": nombre},
+            {"$set": {
+                "nombre": nuevo_nombre,
+                "telefono": telefono,
+                "correo": correo,
+                "imagen": imagen
+            }}
+        )
+        arbol_contactos.eliminar(nombre)
+        nuevo_contacto = Contacto(nuevo_nombre, telefono, correo, imagen)
+        arbol_contactos.insertar(nuevo_contacto)
+    else:
+        db.update_one(
+            {"nombre": nombre},
+            {"$set": {
+                "telefono": telefono,
+                "correo": correo,
+                "imagen": imagen
+            }}
+        )
+        # Actualizar directamente en el árbol (opcional)
+        contacto.telefono = telefono
+        contacto.correo = correo
+        contacto.imagen = imagen
+
+    return jsonify({
+        "mensaje": "Contacto actualizado correctamente",
+        "contacto": {
+            "nombre": nuevo_nombre,
+            "telefono": telefono,
+            "correo": correo,
+            "imagen": imagen
+        }
+    })
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
