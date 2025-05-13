@@ -1,0 +1,52 @@
+.bracket-container {
+  display: flex;
+  overflow-x: auto;
+  padding: 2rem;
+  gap: 2rem;
+}
+
+.round {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 200px;
+}
+
+.round h3 {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.match {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  position: relative;
+}
+
+.team {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.vs {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: #555;
+}
+
+.set-result-button {
+  margin-top: 0.5rem;
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.set-result-button:hover {
+  background-color: #1976d2;
+}
