@@ -1,34 +1,37 @@
-import "./tournament-bracket.css";
+// src/components/ContactList.js
+import React from "react";
+import "./contacto-lista.css";
 
-const TournamentBracket = ({ rounds, onSetResult }) => {
+const ContactList = ({ contactos, onEditar, onEliminar }) => {
   return (
-    <div className="bracket-container">
-      {rounds.map((round, roundIndex) => (
-        <div key={roundIndex} className="round">
-          <h3>Ronda {roundIndex + 1}</h3>
-          {round.map((match, matchIndex) => (
-            <div key={matchIndex} className="match">
-              <div className="team">
-                {match.teamA ? match.teamA : "Pendiente"}
-              </div>
-              <div className="vs">VS</div>
-              <div className="team">
-                {match.teamB ? match.teamB : "Pendiente"}
-              </div>
-              {match.teamA && match.teamB && (
-                <button
-                  className="set-result-button"
-                  onClick={() => onSetResult(roundIndex, matchIndex)}
-                >
-                  Ingresar Resultado
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
+    <ul style={{ listStyle: "none", paddingLeft: 0 }}>
+      {contactos.map((contacto, index) => (
+        <li
+          key={index}
+          style={{
+            borderBottom: "1px solid #ccc",
+            padding: "1rem",
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          <div>
+            <strong>{contacto.nombre}</strong>
+            <br />
+            <small>Tel: {contacto.telefono}</small>
+            <br />
+            <small>Email: {contacto.correo}</small>
+          </div>
+          <div>
+            <button onClick={() => onEditar(contacto)}>Editar</button>
+            <button onClick={() => onEliminar(contacto.nombre)}>
+              Eliminar
+            </button>
+          </div>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 };
 
-export default TournamentBracket;
+export default ContactList;
