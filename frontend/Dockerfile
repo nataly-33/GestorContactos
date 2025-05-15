@@ -8,9 +8,9 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instalar dependencias
-RUN npm install
+RUN npm install 
 
-# Copiar el resto de archivos
+# Copiar el resto de archivos del proyecto
 COPY . .
 
 # Exponer el puerto donde corre Vite

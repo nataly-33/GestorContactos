@@ -1,51 +1,54 @@
-/* components/ContactCard.css */
-
-.contact-card {
-  background: white;
+.cartilla {
+  background: #be9e95;
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  padding: 1rem;
-  text-align: center;
+  padding: 1.4rem;
   transition: transform 0.2s ease;
+  display: flex;
+  gap: 1.5rem;
+  width: 440px;
 }
 
-.contact-card:hover {
-  transform: scale(1.03);
+.cartilla:hover {
+  transform: scale(1.07);
 }
 
-.contact-card img {
-  width: 100%;
+.cartilla img {
+  width: 150px;
   height: 150px;
   object-fit: cover;
   border-radius: 8px;
-  margin-bottom: 1rem;
 }
 
-.contact-card h3 {
-  margin: 0.5rem 0;
+.lado-izq{
+  padding: 0 0.7rem 0 0;
+  display: flex;
+  flex-direction: column;
+  flex:1;
+}
+.cartilla h3 {
+  margin: 0 0 0.6rem 0;
+  text-align: center;
 }
 
-.contact-card p {
+.cartilla p {
   margin: 0.3rem 0;
   font-size: 0.9rem;
-  color: #555;
 }
 
-.contact-card .btn-edit {
-  background-color: #ffc107;
-  color: black;
-  margin-right: 0.5rem;
-}
-
-.contact-card .btn-delete {
-  background-color: #dc3545;
-  color: white;
-}
-
-.contact-card button {
-  padding: 0.4rem 0.8rem;
+.eliminar-cartilla {
   border: none;
+  padding: 0.3rem 0.7rem;
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
+  font-family: "Lora";
+  color: #000000;
+  background-color: #81353c;
+  align-self: center;
+  margin-top: auto;
+}
+
+.eliminar-cartilla{
+  background-color: #8a6165;
 }

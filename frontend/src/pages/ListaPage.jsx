@@ -1,36 +1,46 @@
-// src/pages/ListaPage.js
-import React, { useEffect, useState } from "react";
-import ContactList from "../components/contacto-lista/ContactoLista";
-import "./lista-page.css";
+import React, { useEffect, useState } from 'react';
+import ContactoTabla from '../components/contacto-tabla/ContactoTabla';
+import BuscadorContacto from '../components/buscar-contacto/BuscarContacto';
+import axios from 'axios';
+import "./lista-page.css"
 
 const ListaPage = () => {
   const [contactos, setContactos] = useState([]);
 
-  useEffect(() => {
-    fetch("http://localhost:5000/listar")
-      .then((res) => res.json())
-      .then((data) => setContactos(data));
-  }, []);
-
-  const handleEliminar = (nombre) => {
-    fetch(`http://localhost:5000/eliminar/${nombre}`, {
-      method: "DELETE",
-    }).then(() => setContactos(contactos.filter((c) => c.nombre !== nombre)));
+  const cargarContactos = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/listar');
+      setContactos(res.data);
+    } catch (error) {
+      console.error('Error al cargar contactos:', error);
+    }
   };
 
-  const handleEditar = (contacto) => {
-    // Aquí puedes abrir un modal o navegar a la página de edición
-    console.log("Editar", contacto);
+  useEffect(() => {
+    cargarContactos();
+  }, []);
+
+  const handleEliminar = async (nombre) => {
+    try {
+      await axios.delete(`http://localhost:5000/eliminar/${nombre}`);
+      cargarContactos(); // Refrescar lista después de eliminar
+    } catch (error) {
+      console.error('Error al eliminar:', error);
+    }
+  };
+
+  const handleBuscar = (resultado) => {
+    if (resultado && resultado.length > 0) {
+      setContactos(resultado); // Mostrar resultado único
+    } else {
+      cargarContactos(); // Mostrar todos
+    }
   };
 
   return (
-    <div>
-      <h2>Contactos - Modo Lista</h2>
-      <ContactList
-        contactos={contactos}
-        onEditar={handleEditar}
-        onEliminar={handleEliminar}
-      />
+    <div className="lista-page">
+      <BuscadorContacto onBuscar={handleBuscar} />
+      <ContactoTabla contactos={contactos} onEliminar={handleEliminar} />
     </div>
   );
 };

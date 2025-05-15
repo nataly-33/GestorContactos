@@ -1,27 +1,26 @@
-// src/pages/NuevoContactoPage.js
-import React, { useState } from "react";
-import ContactCard from "../components/contacto-card/ContactoCard";
-import ContactForm from "../components/contacto-form/ContactoForm";
-import "./new-contacto-page.css";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import ContactoForm from "../components/contacto-form/ContactoForm";
 
 const NuevoContactoPage = () => {
-  const handleSubmit = async (contacto) => {
-    await fetch("http://localhost:5000/crear", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(contacto),
-    });
+  const navigate = useNavigate();
 
-    alert("Contacto creado");
-    window.history.back(); // Regresa a la página anterior
+  const handleSubmit = async (contacto) => {
+    try {
+      await axios.post("http://localhost:5000/crear", contacto);
+      navigate("/lista"); 
+      
+    } catch (error) {
+      console.error("Error al crear contacto:", error);
+      alert("Hubo un error al crear el contacto.");
+    }
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h2>Crear Nuevo Contacto</h2>
-      <ContactForm onSubmit={handleSubmit} />
-    </div>
+      <ContactoForm onSubmit={handleSubmit} />
   );
 };
 
 export default NuevoContactoPage;
+

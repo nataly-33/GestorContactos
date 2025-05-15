@@ -1,11 +1,7 @@
-/* pages/CartillaPage.css */
-
-.cartilla-page {
-  padding: 2rem;
-}
-
-.cards-container {
+.cartilla-contenedor {
   display: flex;
   flex-wrap: wrap;
   gap: 1.5rem;
+  padding: 3rem;
+  justify-content: center;
 }

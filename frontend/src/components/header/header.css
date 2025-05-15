@@ -1,42 +1,52 @@
-/* components/Header.css */
-
-.header {
-  background-color: #282c34;
-  color: white;
-  padding: 1rem 2rem;
+.header-principal {
+  background-color: #e9d5d1;
+  color: #000;
+  padding: 1.2rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.header h1 {
-  margin: 0;
-  font-size: 1.5rem;
+.logo-titulo {
+  display:flex;
+  gap: 0.5rem;
+  align-items: center;
+  & h1 {
+    margin: 0;
+    font-size: 2rem;
+  }
 }
 
 .nav-links {
   display: flex;
-  gap: 1rem;
+  gap: 3rem;
   align-items: center;
-}
+  font-size: 1.3rem;
 
-.nav-links a {
-  color: white;
+  & a {
   text-decoration: none;
   font-weight: bold;
+  color: #000;
+    &:hover {
+    color:#999b86;
+    }
+  } 
 }
 
-.btn-registrar {
-  background-color: #28a745;
-  color: white;
+
+.button-registrar {
+  background-color: #c5ca96;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  padding: 0.8rem 1.5rem;
+  border-radius: 20px;
   cursor: pointer;
   font-weight: bold;
+  font-family: "Lora";
+  font-size: 1.1rem;
   transition: background-color 0.3s ease;
+  margin-right: 2rem;
 }
 
-.btn-registrar:hover {
-  background-color: #218838;
+.button-registrar:hover {
+  background-color: #999b86;
 }

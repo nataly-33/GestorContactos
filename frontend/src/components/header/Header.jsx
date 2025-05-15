@@ -1,31 +1,23 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { RiContactsBook3Line } from "react-icons/ri";
 import "./header.css/";
 
 const Header = () => {
   return (
-    <header
-      style={{ padding: "1rem", backgroundColor: "#282c34", color: "white" }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-          {/* Aquí puedes poner un logo */}
-          <h1>Gestor de Contactos</h1>
-          <nav>
-            <Link to="/lista">Lista</Link> |<Link to="/cartilla">Cartilla</Link>
-          </nav>
+    <header className="header-principal"  >
+        <div className="logo-titulo">
+          <RiContactsBook3Line  size={45} />
+          <h1>CONTACTOS</h1>
         </div>
+        <nav className="nav-links">
+          <Link to="/lista">Lista</Link>
+          <Link to="/cartilla">Cartilla</Link>
+        </nav>
         <Link to="/nuevo">
-          <button style={{ padding: "0.5rem 1rem" }}>Registrar Nuevo</button>
+          <button class="button-registrar">Registrar</button>
         </Link>
-      </div>
-    </header>
+      </header>
   );
 };
 

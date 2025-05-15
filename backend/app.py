@@ -3,7 +3,6 @@ from flask_cors import CORS
 import os
 
 from flask_pymongo import PyMongo
-from bson.objectid import ObjectId
 
 from models.contacto import Contacto
 from models.arbolBST import ArbolBST
@@ -11,16 +10,20 @@ from models.arbolBST import ArbolBST
 app = Flask(__name__)
 CORS(app)
 
-# Configuración de MongoDB
 app.config["MONGO_URI"] = os.environ.get("MONGO_URI", "mongodb://localhost/proyectobst")
 mongo = PyMongo(app)
 db = mongo.db.contactos
 
-# Inicializar árbol BST
-arbol_contactos = ArbolBST()
 
-def cargar_contactos_en_arbol():
-    contactos = db.find()
+def recargar_arbol():
+    """
+    Recarga el árbol BST con los contactos almacenados en la base de datos MongoDB.
+
+    Extrae todos los documentos de la colección y los inserta en el árbol.
+    """
+    global arbol_contactos
+    arbol_contactos = ArbolBST()
+    contactos = list(db.find())
     for c in contactos:
         contacto = Contacto(
             c.get("nombre", ""),
@@ -30,128 +33,104 @@ def cargar_contactos_en_arbol():
         )
         arbol_contactos.insertar(contacto)
 
-cargar_contactos_en_arbol()
 
+recargar_arbol()
 
-# Rutas
 
 @app.route('/crear', methods=['POST'])
 def crear_contacto():
-    data = request.get_json()
-    
-    # Validaciones básicas
-    if not data or 'nombre' not in data:
-        return jsonify({"error": "Falta el nombre del contacto"}), 400
-    
-    nombre = data.get('nombre')
-    telefono = data.get('telefono')
-    correo = data.get('correo')
-    imagen = data.get('imagen')
+    """
+    Crea un nuevo contacto a partir de los datos JSON recibidos.
 
-    # Verificar si ya existe el contacto por nombre
-    if arbol_contactos.buscar(nombre):
-        return jsonify({"error": "Ya existe un contacto con ese nombre"}), 400
+    Valida que el nombre esté presente y que no exista un contacto con el mismo nombre.
+    Inserta el contacto en MongoDB y en el árbol BST.
 
-    # Crear y guardar en MongoDB
-    nuevo_contacto = Contacto(nombre, telefono, correo, imagen)
-    resultado = db.insert_one(nuevo_contacto.to_dict())
+    Returns:
+        JSON con mensaje de éxito y el ID insertado,
+        o JSON con error y código HTTP 400 o 500 en caso de fallo.
+    """
+    try:
+        data = request.get_json()
+        if not data or 'nombre' not in data:
+            return jsonify({"error": "Falta el nombre del contacto"}), 400
 
-    # Insertar en el árbol
-    arbol_contactos.insertar(nuevo_contacto)
+        nombre = data.get('nombre')
+        telefono = data.get('telefono')
+        correo = data.get('correo')
+        imagen = data.get('imagen') or "/perfil-default.png"
 
-    return jsonify({
-        "mensaje": "Contacto agregado correctamente",
-        "_id": str(resultado.inserted_id)
-    })
+        if arbol_contactos.buscar(nombre):
+            return jsonify({"error": "Ya existe un contacto con ese nombre"}), 400
+
+        nuevo_contacto = Contacto(nombre, telefono, correo, imagen)
+        resultado = db.insert_one(nuevo_contacto.to_dict())
+        arbol_contactos.insertar(nuevo_contacto)
+
+        return jsonify({
+            "mensaje": "Contacto agregado correctamente",
+            "_id": str(resultado.inserted_id)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route('/buscar/<nombre>', methods=['GET'])
 def buscar_contacto(nombre):
-    contacto = arbol_contactos.buscar(nombre)
+    """
+    Busca un contacto en el árbol BST por su nombre.
 
-    if contacto:
-        return jsonify(contacto.to_dict())
-    else:
+    Args:
+        nombre (str): Nombre del contacto a buscar.
+
+    Returns:
+        JSON con los datos del contacto si existe,
+        o mensaje de error 404 si no se encuentra.
+    """
+    try:
+        contacto = arbol_contactos.buscar(nombre)
+        if contacto:
+            return jsonify(contacto.to_dict())
         return jsonify({"mensaje": "Contacto no encontrado"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route('/listar', methods=['GET'])
 def listar_contactos():
-    contactos = arbol_contactos.listar()
-    return jsonify(contactos)
+    """
+    Lista todos los contactos almacenados en el árbol BST.
+
+    Returns:
+        JSON con la lista de contactos.
+    """
+    try:
+        contactos = arbol_contactos.listar()
+        return jsonify(contactos)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route('/eliminar/<nombre>', methods=['DELETE'])
 def eliminar_contacto(nombre):
-    contacto = arbol_contactos.buscar(nombre)
-    if contacto:
-        db.delete_one({"nombre": nombre})
-        arbol_contactos.eliminar(nombre)
-        return jsonify({"mensaje": f"Contacto '{nombre}' eliminado"})
-    else:
+    """
+    Elimina un contacto por nombre de MongoDB y del árbol BST.
+
+    Args:
+        nombre (str): Nombre del contacto a eliminar.
+
+    Returns:
+        JSON con mensaje de éxito o error 404 si no se encuentra el contacto.
+    """
+    try:
+        contacto = arbol_contactos.buscar(nombre)
+        if contacto:
+            db.delete_one({"nombre": nombre})
+            arbol_contactos.eliminar(nombre)
+            return jsonify({"mensaje": f"Contacto '{nombre}' eliminado"})
         return jsonify({"error": "Contacto no encontrado"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-@app.route('/editar/<nombre>', methods=['PUT'])
-def editar_contacto(nombre):
-    contacto = arbol_contactos.buscar(nombre)
-
-    if not contacto:
-        return jsonify({"error": "Contacto no encontrado"}), 404
-
-    data = request.get_json()
-
-    if not data:
-        return jsonify({"error": "No se recibieron datos"}), 400
-
-    # Recibir todos los campos del contacto
-    nuevo_nombre = data.get("nombre", contacto.nombre)
-    telefono = data.get("telefono", contacto.telefono)
-    correo = data.get("correo", contacto.correo)
-    imagen = data.get("imagen", contacto.imagen)
-
-    # Validaciones básicas
-    if not telefono or len(telefono) != 8 or not telefono.isdigit():
-        return jsonify({"error": "Teléfono debe tener 8 dígitos"}), 400
-    if not correo or "@" not in correo:
-        return jsonify({"error": "Correo inválido"}), 400
-
-    # Si cambia el nombre, hay que borrar y reinsertar en el árbol
-    if nuevo_nombre != contacto.nombre:
-        db.update_one(
-            {"nombre": nombre},
-            {"$set": {
-                "nombre": nuevo_nombre,
-                "telefono": telefono,
-                "correo": correo,
-                "imagen": imagen
-            }}
-        )
-        arbol_contactos.eliminar(nombre)
-        nuevo_contacto = Contacto(nuevo_nombre, telefono, correo, imagen)
-        arbol_contactos.insertar(nuevo_contacto)
-    else:
-        db.update_one(
-            {"nombre": nombre},
-            {"$set": {
-                "telefono": telefono,
-                "correo": correo,
-                "imagen": imagen
-            }}
-        )
-        # Actualizar directamente en el árbol (opcional)
-        contacto.telefono = telefono
-        contacto.correo = correo
-        contacto.imagen = imagen
-
-    return jsonify({
-        "mensaje": "Contacto actualizado correctamente",
-        "contacto": {
-            "nombre": nuevo_nombre,
-            "telefono": telefono,
-            "correo": correo,
-            "imagen": imagen
-        }
-    })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

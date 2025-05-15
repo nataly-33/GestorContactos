@@ -1,0 +1,22 @@
+.buscador-form {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 1rem;
+  padding: 2.5rem 0;
+}
+
+.buscador-form input {
+  padding: 7px;
+  width: 50%;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.btn-buscar {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  color: #999b86;
+}

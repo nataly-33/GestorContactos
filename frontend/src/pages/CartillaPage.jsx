@@ -1,4 +1,3 @@
-// src/pages/CartillaPage.js
 import React, { useEffect, useState } from "react";
 import ContactCard from "../components/contacto-card/ContactoCard";
 import "./cartilla-page.css";
@@ -19,20 +18,11 @@ const CartillaPage = () => {
   };
 
   const handleEditar = (contacto) => {
-    // Aquí puedes abrir un modal o navegar a edición
     console.log("Editar", contacto);
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        gap: "1rem",
-        padding: "1rem",
-      }}
-    >
-      <h2>Contactos - Modo Tarjetas</h2>
+    <div className="cartilla-contenedor" >
       {contactos.map((contacto, index) => (
         <ContactCard
           key={index}
