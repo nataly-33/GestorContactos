@@ -50,3 +50,26 @@
 .button-guardar:hover {
   background-color: #999b86;
 }
+
+.close-button {
+  font-size: 24px;
+  color: #d9534f;
+  cursor: pointer;
+  margin-left: auto;
+  transition: transform 0.2s, color 0.2s;
+}
+
+.close-button:hover {
+  color: #b52b27;
+  transform: scale(1.02);
+}
+
+.input-error {
+  border: 2px solid red;
+}
+
+.error-text {
+  color: red;
+  font-size: 0.9rem;
+  margin-top: 4px;
+}

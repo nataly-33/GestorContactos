@@ -1,12 +1,18 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { IoClose } from "react-icons/io5";
 import "./contacto-form.css";
 
 const ContactoForm = ({ onSubmit, initialData = {} }) => {
+  const navigate = useNavigate();
+
   const [nombre, setNombre] = useState(initialData.nombre || "");
   const [telefono, setTelefono] = useState(initialData.telefono || "");
   const [correo, setCorreo] = useState(initialData.correo || "");
   const [imagen, setImagen] = useState(initialData.imagen || null);
   const [imagenPreview, setImagenPreview] = useState(initialData.imagen || "/perfil-default.png");
+
+  const [telefonoError, setTelefonoError] = useState(""); // 💡 nuevo estado
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -20,23 +26,42 @@ const ContactoForm = ({ onSubmit, initialData = {} }) => {
     }
   };
 
-const handleSubmit = (e) => {
-  e.preventDefault();
+  const validarTelefono = (numero) => {
+    const regex = /^[67]\d{7}$/; 
+    return regex.test(numero);
+  };
 
-  let imagenFinal = imagen;
-  if (!imagenFinal) {
-    imagenFinal = "/perfil-default.png";
-    setImagenPreview(imagenFinal);
-  }
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-  const contacto = { nombre, telefono, correo, imagen: imagenFinal };
-  onSubmit(contacto);
-};
+    if (!validarTelefono(telefono)) {
+      setTelefonoError("El número debe tener 8 dígitos y comenzar con 6 o 7");
+      return; 
+    } else {
+      setTelefonoError(""); 
+    }
+
+    let imagenFinal = imagen;
+    if (!imagenFinal) {
+      imagenFinal = "/perfil-default.png";
+      setImagenPreview(imagenFinal);
+    }
+
+    const contacto = { nombre, telefono, correo, imagen: imagenFinal };
+    onSubmit(contacto);
+  };
+
+  const handleCancel = () => {
+    navigate("/");
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="contacto-form" >
+    <form onSubmit={handleSubmit} className="contacto-form">
+      <div className="close-button" onClick={handleCancel}>
+        <IoClose size={35} />
+      </div>
       <div className="contacto-row">
-         <label className="label-input">Nombre completo</label>
+        <label className="label-input">Nombre completo</label>
         <input
           type="text"
           value={nombre}
@@ -44,17 +69,21 @@ const handleSubmit = (e) => {
           required
         />
       </div>
+
       <div className="contacto-row">
         <label className="label-input">Celular</label>
         <input
-          type="number"
+          type="text" 
           value={telefono}
           onChange={(e) => setTelefono(e.target.value)}
+          className={telefonoError ? "input-error" : ""}
           required
         />
+        {telefonoError && <p className="error-text">{telefonoError}</p>}
       </div>
+
       <div className="contacto-row">
-        <label className="label-input">Correo electronico</label>
+        <label className="label-input">Correo electrónico</label>
         <input
           type="email"
           value={correo}
@@ -62,13 +91,14 @@ const handleSubmit = (e) => {
           required
         />
       </div>
+
       <div className="contacto-row">
         <label className="label-input">Imagen</label>
         <label>
           <input type="file" accept="image/*" onChange={handleImageChange} />
         </label>
       </div>
-      
+
       <img
         src={imagenPreview || "default.jpg"}
         alt="Vista previa"

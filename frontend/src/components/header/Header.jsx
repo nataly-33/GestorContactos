@@ -15,7 +15,7 @@ const Header = () => {
           <Link to="/cartilla">Cartilla</Link>
         </nav>
         <Link to="/nuevo">
-          <button class="button-registrar">Registrar</button>
+          <button className="button-registrar">Registrar</button>
         </Link>
       </header>
   );

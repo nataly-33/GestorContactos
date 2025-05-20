@@ -5,10 +5,12 @@ services:
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: nataly-33
-      MONGO_INITDB_ROOT_PASSWORD: passWord63
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+      MONGO_INITDB_DATABASE: proyectobst
     volumes:
-      - mongo_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+      - mongodb_data:/data/db 
     restart: always
 
   backend:
@@ -38,4 +40,4 @@ services:
       - HOST=0.0.0.0
 
 volumes:
-  mongo_data:
+  mongodb_data: 
