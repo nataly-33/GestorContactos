@@ -11,7 +11,6 @@ function App() {
       <Header />
       <Routes>
         <Route path="/" element={<ListaPage />} />
-        <Route path="/lista" element={<ListaPage />} />
         <Route path="/cartilla" element={<CartillaPage />} />
         <Route path="/nuevo" element={<NuevoContactoPage />} />
       </Routes>

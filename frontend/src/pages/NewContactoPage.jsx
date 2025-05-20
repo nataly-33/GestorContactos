@@ -9,7 +9,7 @@ const NuevoContactoPage = () => {
   const handleSubmit = async (contacto) => {
     try {
       await axios.post("http://localhost:5000/crear", contacto);
-      navigate("/lista"); 
+      navigate("/"); 
       
     } catch (error) {
       console.error("Error al crear contacto:", error);

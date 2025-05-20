@@ -10,7 +10,7 @@ const BuscadorContacto = ({ onBuscar }) => {
   useEffect(() => {
     const cargarContactos = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/listar');
+        const res = await axios.get('http://localhost:5000/lista');
         onBuscar(res.data);
         setMensajeError('');
       } catch (error) {
@@ -19,17 +19,24 @@ const BuscadorContacto = ({ onBuscar }) => {
       }
     };
 
-    if (nombre.trim() === '') {
-      cargarContactos();
-    }
-  }, [nombre, onBuscar]); 
+    cargarContactos();
+  }, []); 
 
   const handleBuscar = async (e) => {
     e.preventDefault();
-
     const valor = nombre.trim();
 
-    if (valor === '') return; 
+    if (valor === '') {
+      try {
+        const res = await axios.get('http://localhost:5000/lista');
+        onBuscar(res.data);
+        setMensajeError('');
+      } catch (error) {
+        console.error('Error al cargar contactos:', error);
+        setMensajeError('No se pudo cargar la lista de contactos.');
+      }
+      return;
+    }
 
     try {
       const res = await axios.get(`http://localhost:5000/buscar/${valor}`);

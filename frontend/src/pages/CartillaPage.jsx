@@ -6,7 +6,7 @@ const CartillaPage = () => {
   const [contactos, setContactos] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/listar")
+    fetch("http://localhost:5000/lista")
       .then((res) => res.json())
       .then((data) => setContactos(data));
   }, []);

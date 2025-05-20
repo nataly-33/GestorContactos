@@ -21,22 +21,22 @@ contacto_controller.configurar_db_y_arbol(mongo)
 # Rutas
 @app.route('/crear', methods=['POST'])
 def crear():
-    return contact_controller.crear_contacto()
+    return contacto_controller.crear_contacto()
 
 
 @app.route('/buscar/<nombre>', methods=['GET'])
 def buscar(nombre):
-    return contact_controller.buscar_contacto(nombre)
+    return contacto_controller.buscar_contacto(nombre)
 
 
-@app.route('/listar', methods=['GET'])
+@app.route('/lista', methods=['GET'])
 def listar():
-    return contact_controller.listar_contactos()
+    return contacto_controller.listar_contactos()
 
 
 @app.route('/eliminar/<nombre>', methods=['DELETE'])
 def eliminar(nombre):
-    return contact_controller.eliminar_contacto(nombre)
+    return contacto_controller.eliminar_contacto(nombre)
 
 
 # Punto de entrada de la aplicación
