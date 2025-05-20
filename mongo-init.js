@@ -1,4 +1,4 @@
-db = db.getSiblingDB('proyectobst'); // base de datos que vas a usar
+db = db.getSiblingDB('proyectobst'); 
 
 db.createUser({
   user: 'nataly-33',

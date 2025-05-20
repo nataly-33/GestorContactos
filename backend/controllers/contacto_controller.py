@@ -9,10 +9,7 @@ db = None
 
 def configurar_db_y_arbol(mongo):
     """
-    Configura la base de datos y recarga el árbol BST desde MongoDB.
-
-    Este método debe llamarse al iniciar la app (por ejemplo, desde app.py)
-    para establecer la conexión con la colección de contactos y
+    Configura la base de datos para establecer la conexión con la colección de contactos y
     poblar el árbol con los datos actuales.
     """
     global db
