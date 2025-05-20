@@ -12,7 +12,7 @@ const ContactoForm = ({ onSubmit, initialData = {} }) => {
   const [imagen, setImagen] = useState(initialData.imagen || null);
   const [imagenPreview, setImagenPreview] = useState(initialData.imagen || "/perfil-default.png");
 
-  const [telefonoError, setTelefonoError] = useState(""); // 💡 nuevo estado
+  const [telefonoError, setTelefonoError] = useState(""); 
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];

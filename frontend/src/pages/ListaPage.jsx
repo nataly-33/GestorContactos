@@ -23,7 +23,7 @@ const ListaPage = () => {
   const handleEliminar = async (nombre) => {
     try {
       await axios.delete(`http://localhost:5000/eliminar/${nombre}`);
-      cargarContactos(); // Refrescar lista después de eliminar
+      cargarContactos(); 
     } catch (error) {
       console.error('Error al eliminar:', error);
     }
@@ -31,9 +31,9 @@ const ListaPage = () => {
 
   const handleBuscar = (resultado) => {
     if (resultado && resultado.length > 0) {
-      setContactos(resultado); // Mostrar resultado único
+      setContactos(resultado); 
     } else {
-      cargarContactos(); // Mostrar todos
+      cargarContactos(); 
     }
   };
 
